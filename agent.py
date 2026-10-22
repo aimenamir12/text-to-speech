@@ -119,6 +119,38 @@ def speak_text(text):
     return err or "Finished speaking."
 
 
+def read_text_file(filename):
+    """TOOL 2: return a .txt file's contents to the model (truncated if long)."""
+    text, err = _load_text(filename)
+    if err:
+        return err
+    if len(text) > MAX_MODEL_CHARS:
+        return (
+            text[:MAX_MODEL_CHARS]
+            + f"\n\n[Truncated: showing first {MAX_MODEL_CHARS} of {len(text)} characters. "
+            "To read the whole file aloud, use read_file_aloud.]"
+        )
+    return text
+
+
+def read_file_aloud(filename):
+    """TOOL 3: read a file and speak it entirely in Python.
+
+    The file text never passes through the model, so long files work and
+    nothing gets cut off by max_tokens.
+    """
+    text, err = _load_text(filename)
+    if err:
+        return err
+    spoken = text[:MAX_SPEAK_CHARS]
+    err = _speak(spoken)
+    if err:
+        return err
+    if len(text) > MAX_SPEAK_CHARS:
+        return f"Finished speaking the first {MAX_SPEAK_CHARS} of {len(text)} characters."
+    return "Finished reading the file aloud."
+
+
 TOOL_FUNCTIONS = {
     "speak_text": ("text", speak_text),
     "read_text_file": ("filename", read_text_file),
